@@ -5,12 +5,12 @@ const http = axios.create({
     baseURL: "http://store.go-clothes.uz:5555/v1"
 });
 
-http.interceptors.request.use((config):any=>{
+http.interceptors.request.use((config) => {
     let token = getDataFromCookie("token");
-    if(token){
-        config.headers.Authorization = `${token}`;
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
     }
-    return config
-})
+    return config;
+});
 
-export default http
+export default http;

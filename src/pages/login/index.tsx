@@ -1,33 +1,78 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import * as Yup from "yup";
+import { TextField, Button } from "@mui/material";
+import useAuthStore from "../../store/auth";
+import { loginSchema } from "@validation";
+import { loginInterface } from "@interface";
+import { useNavigate } from "react-router-dom";
+import "./style.css";
+import { saveDataFromCookie } from "@token-service";
 
+function Index() {
+  const navigate = useNavigate();
+  const { signin } = useAuthStore();
+  const initialValues: loginInterface = {
+    email: "",
+    password: "",
+  };
 
-function index() {
-  const initialValues = {
-    email:"",
-    password:""
-  }
-  const schema = Yup.object().shape({
-    email: Yup.string().min(4, "Too Short!").required("Required"),
-    password: Yup.string().min(6, "Too Short!").required("Required"),
-  });
-  const handleSubmit = () => {
-    console.log("123")
-  }
+  const handleSubmit = async (values: loginInterface) => {
+    try {
+      await loginSchema.validate(values, { abortEarly: false });
+      const res = await signin(values);
+      console.log("Response:", res);
+      if (res && res.status === 200) {
+        saveDataFromCookie("email" , values.email)
+        navigate("/main");
+      }
+    } catch (err) {
+      console.log("Error:", err);
+    }
+  };
+
   return (
-    <>
-      <h1>Login</h1>
-      <Formik initialValues={initialValues} validationSchema={schema} onSubmit={handleSubmit}>
-        {({ isSubmitting }) => 
-        (<Form>
-          <Field type="email" name="email" />
-          <button type="submit" disabled={isSubmitting}>
-            Submit
-          </button>
-        </Form>)}
+    <div className="w-full h-[100vh] flex gap-10 flex-col justify-center items-center bg-img">
+      <h1 className="text-[46px] font-bold">Login</h1>
+      <Formik
+        initialValues={initialValues}
+        validationSchema={loginSchema}
+        onSubmit={handleSubmit}
+      >
+        {({ isSubmitting }) => (
+          <Form className="flex flex-col gap-5">
+            <Field
+              type="email"
+              name="email"
+              className="border-white"
+              as={TextField}
+              id="standard-textarea"
+              label="Email"
+              placeholder="Email"
+              size="small"
+              style={{ width: "400px"}} 
+            />
+            <ErrorMessage name="email" component="div" className="error" />
+
+            <Field
+              type="password"
+              name="password"
+              className=""
+              as={TextField}
+              label="Password"
+              placeholder="Password"
+              multiline
+              size="small"
+              style={{ width: "400px"}} 
+            />
+            <ErrorMessage name="password" component="div" className="error" />
+
+            <Button variant="outlined" type="submit" disabled={isSubmitting}>
+              Submit
+            </Button>
+          </Form>
+        )}
       </Formik>
-    </>
+    </div>
   );
 }
 
-export default index;
+export default Index;
