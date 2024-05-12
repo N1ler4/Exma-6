@@ -20,10 +20,12 @@
       "@router-root": ["./src/router/root"],
       "@service": ["./src/service"],
       "@users": ["./src/service/users"],
+      "@products": ["./src/service/products"],
       "@token-service" : ["./src/utils/tokenService"],
       "@http": ["./src/service/config/http"],
       "@validation": ["./src/utils/validation"],
       "@modals": ["./src/modals"],
+      "@product-modal": ["./src/modals/product-modal"],
     },
 
     /* Bundler mode */

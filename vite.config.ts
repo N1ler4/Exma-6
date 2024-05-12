@@ -15,6 +15,7 @@ export default defineConfig({
       { find: "@router-root", replacement: '/src/router/root'},
       { find: "@service", replacement: '/src/service'},
       { find: "@users", replacement: '/src/service/users'},
+      { find: "@products", replacement: '/src/service/products'},
       { find: "@store", replacement: '/src/store'}, 
       { find: "@utils", replacement: '/src/utils'},
       { find: "@ui", replacement: '/src/components/ui'},
@@ -23,6 +24,7 @@ export default defineConfig({
       { find: "@http", replacement: '/src/service/config/http'},
       { find: "@validation", replacement: '/src/utils/validation'},
       { find: "@modals", replacement: '/src/modals'},
+      { find: "@product-modal", replacement: '/src/modals/product-modal'},
     ]
   }
 })
