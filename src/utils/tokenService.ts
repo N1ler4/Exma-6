@@ -6,3 +6,6 @@ export const getDataFromCookie = (title: string) => {
 export const saveDataFromCookie = (title: any , value:any) => {
     Cookies.set(title , value)
 }
+export const deleteDataFromCookie = (title:string) => {
+  Cookies.remove(title);
+}
