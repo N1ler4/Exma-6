@@ -7,7 +7,7 @@ interface ModalProps {
   modalContent: React.ReactNode;
   handleOpen?: boolean;
   buttonText?: string;
-  onClose?: () => void; // Add the onClose property to the interface
+  onClose?: () => void; 
 }
 
 const style = {
@@ -28,22 +28,23 @@ const BasicModal: React.FC<ModalProps> = ({ modalContent, handleOpen = true, but
   const handleToggle = () => {
     setOpen(!open);
     if (onClose) {
-      onClose(); // Call onClose if it's provided
+      onClose(); 
     }
   };
 
   return (
     <div>
-      <Button onClick={handleToggle}>{buttonText}</Button>
+      <Button onClick={handleToggle} variant="contained" color="primary">{buttonText}</Button>
       <Modal
         open={open}
-        onClose={handleToggle} // Use handleToggle instead of handleClose
+        onClose={handleToggle} 
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
           {modalContent}
         </Box>
+        
       </Modal>
     </div>
   );

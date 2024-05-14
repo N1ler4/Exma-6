@@ -1,22 +1,29 @@
 import { useState, useEffect } from "react";
 import BasicModal from "@modals";
-import {
-  Button,
-  TextField,
-  Snackbar,
-  Alert,
-  AlertColor,
-} from "@mui/material";
+import { Button, Snackbar, TextField } from "@mui/material";
 import { ErrorMessage, Field, Formik, Form } from "formik";
 import { category } from "../service/category/categories";
 import { productValidationSchema } from "@validation";
 import { products } from "@products";
+import { getDataFromCookie } from "@token-service";
+import MuiAlert from "@mui/material/Alert";
 
-export default function Product() {
+export default function UpdateProduct({
+  ageMax,
+  ageMin,
+  for_gender,
+  size,
+  cost,
+  description,
+  discount,
+  madeIn,
+  count,
+  color,
+  productName,
+}: any) {
   const [categories, setCategories] = useState<any[]>([]);
-  const [openNotification, setOpenNotification] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationSeverity, setNotificationSeverity] = useState<AlertColor | undefined>(undefined); 
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -48,31 +55,28 @@ export default function Product() {
     made_in: "",
     product_name: "",
     size: null,
+    product_id: getDataFromCookie("id"),
   };
 
   const handleSubmit = async (values: any) => {
     try {
-      const res = await products.productsPost(values);
+      const res = await products.productsUpdate(values);
       console.log("Product posted successfully:", res.data);
-
-      setNotificationSeverity("success");
-      setNotificationMessage("Product added successfully");
-      setOpenNotification(true);
-
+      if (res.status === 200) {
+        handleOpenSnackbar("Product updated successfully!");
+      }
       return res.data;
     } catch (err) {
       console.error("Error posting product:", err);
-
-      setNotificationSeverity("error");
-      setNotificationMessage("Error adding product. Please try again.");
-      setOpenNotification(true);
-
       throw err;
     }
   };
-
-  const handleCloseNotification = () => {
-    setOpenNotification(false);
+  const handleOpenSnackbar = (message:any) => {
+    setSnackbarMessage(message);
+    setOpenSnackbar(true);
+  };
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   return (
@@ -89,7 +93,7 @@ export default function Product() {
                 onSubmit={handleSubmit}
                 className="flex flex-col justify-center items-center gap-5"
               >
-                <h1 className="font-bold text-[32px]">Add New User</h1>
+                <h1 className="font-bold text-[32px]">Update Product</h1>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col">
                     <Field
@@ -98,6 +102,7 @@ export default function Product() {
                       className="p-2 border rounded"
                       as={TextField}
                       size="small"
+                      defaultValue={productName}
                     />
                     <ErrorMessage
                       name="product_name"
@@ -110,6 +115,7 @@ export default function Product() {
                       as="select"
                       name="for_gender"
                       className="w-full mb-3 border py-3 rounded-md"
+                      defaultValue={for_gender}
                     >
                       <option className="ml-3">Select Gender</option>
                       <option value="male">Male</option>
@@ -126,6 +132,7 @@ export default function Product() {
                       as="select"
                       name="category_id"
                       className="w-full mb-3 border py-3 rounded-md"
+                      defaultValue={category}
                     >
                       <option>Select Category</option>
                       {categories.map((item) => (
@@ -149,6 +156,7 @@ export default function Product() {
                       as="select"
                       name="made_in"
                       className="w-full mb-3 border py-3 rounded-md"
+                      defaultValue={madeIn}
                     >
                       <option>Made In</option>
                       <option value="UZB">UZB</option>
@@ -169,6 +177,7 @@ export default function Product() {
                       className="p-2 border rounded"
                       as={TextField}
                       size="small"
+                      defaultValue={size}
                     />
                     <ErrorMessage
                       name="size"
@@ -184,6 +193,7 @@ export default function Product() {
                       className="p-2 border rounded"
                       as={TextField}
                       size="small"
+                      defaultValue={ageMax}
                     />
                     <ErrorMessage
                       name="age_max"
@@ -199,6 +209,7 @@ export default function Product() {
                       className="p-2 border rounded"
                       as={TextField}
                       size="small"
+                      defaultValue={count}
                     />
                     <ErrorMessage
                       name="count"
@@ -214,6 +225,7 @@ export default function Product() {
                       className="p-2 border rounded"
                       as={TextField}
                       size="small"
+                      defaultValue={ageMin}
                     />
                     <ErrorMessage
                       name="age_min"
@@ -229,6 +241,7 @@ export default function Product() {
                       className="p-2 border rounded"
                       as={TextField}
                       size="small"
+                      defaultValue={color}
                     />
                     <ErrorMessage
                       name="color"
@@ -244,6 +257,7 @@ export default function Product() {
                       className="p-2 border rounded"
                       as={TextField}
                       size="small"
+                      defaultValue={description}
                     />
                     <ErrorMessage
                       name="description"
@@ -257,6 +271,7 @@ export default function Product() {
                       name="cost"
                       placeholder="Cost"
                       className="p-2 border rounded"
+                      defaultValue={cost}
                     />
                     <ErrorMessage
                       name="cost"
@@ -272,6 +287,7 @@ export default function Product() {
                       className="p-2 border rounded"
                       as={TextField}
                       size="small"
+                      defaultValue={discount}
                     />
                     <ErrorMessage
                       name="discount"
@@ -280,7 +296,7 @@ export default function Product() {
                     />
                   </div>
                   <Button type="submit" variant="contained">
-                    Add
+                    Update
                   </Button>
                 </div>
               </Form>
@@ -288,20 +304,21 @@ export default function Product() {
           </Formik>
         }
         handleOpen={false}
-        buttonText="Add New Product"
+        buttonText="Update"
       />
       <Snackbar
-        open={openNotification}
+        open={openSnackbar}
         autoHideDuration={6000}
-        onClose={handleCloseNotification}
+        onClose={handleCloseSnackbar}
       >
-        <Alert
-          onClose={handleCloseNotification}
-          severity={notificationSeverity}
-          sx={{ width: "100%" }}
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={handleCloseSnackbar}
+          severity="success"
         >
-          {notificationMessage}
-        </Alert>
+          {snackbarMessage}
+        </MuiAlert>
       </Snackbar>
     </>
   );

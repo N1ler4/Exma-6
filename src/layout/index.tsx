@@ -77,7 +77,6 @@ export default function ResponsiveDrawer(props: Props) {
     </div>
   );
 
-  // Remove this const when copying and pasting into your project.
   const container = window !== undefined ? () => window().document.body : undefined;
 
   return (
@@ -101,7 +100,7 @@ export default function ResponsiveDrawer(props: Props) {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Responsive drawer
+            Clothes
           </Typography>
         </Toolbar>
       </AppBar>

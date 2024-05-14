@@ -3,11 +3,14 @@ import { products } from "@products";
 import { deleteDataFromCookie, getDataFromCookie } from "@token-service";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import http from "@http";
+import UpdateProduct from "../../modals/single-product";
 
 const ProductDetail = () => {
   const navigate = useNavigate();
   const productId = getDataFromCookie("id");
   const [product, setProduct] = useState<any>(null);
+  const [img, setImg] = useState("");
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -30,6 +33,19 @@ const ProductDetail = () => {
     navigate("/main/products");
   };
 
+  const getImg = async (id: string | undefined) => {
+    try {
+      const response: any = await http.get(`/media/${id}`);
+      setImg(
+        response?.data?.images[response?.data?.images.length - 1]?.image_url
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  getImg(getDataFromCookie("id"));
+
   const deleteProduct = async () => {
     try {
       await products.productsDelete(productId);
@@ -40,68 +56,103 @@ const ProductDetail = () => {
     }
   };
 
+
   return (
     <div>
-      <Button onClick={handleBackClick} variant="contained" color="primary">
-        Back
-      </Button>
-      <Button onClick={deleteProduct} variant="contained" color="primary">
-        Delete
-      </Button>
+      <div className="flex gap-5">
+        <Button onClick={handleBackClick} variant="contained" color="primary">
+          Back
+        </Button>
+        <Button onClick={deleteProduct} variant="contained" color="primary">
+          Delete
+        </Button>
+        {product && (
+          <UpdateProduct
+            ageMax={product.age_max} 
+            ageMin={product.age_min} 
+            for_gender={product.for_gender}
+            size={product.size}
+            cost={product.cost}
+            description={product.description}
+            discount={product.discount}
+            madeIn={product.made_in}
+            count={product.count}
+            color={product.color}
+            productName={product.product_name}
+          />
+        )}
+      </div>
       {product && (
-        <div style={{ marginTop: "20px" }}>
-          <h2
-            style={{
-              marginBottom: "10px",
-              fontSize: "24px",
-              color: "#333",
-              textDecoration: "underline",
-            }}
-          >
-            {product.product_name}
-          </h2>
-          <div className="flex gap-3">
+        <div className="mt-[60px] flex items-center justify-around">
+          <div>
+            <img src={img} alt="" className="w-[300px]" />
+          </div>
+          <div>
+            <h2
+              style={{
+                marginBottom: "10px",
+                fontSize: "32px",
+                color: "#444",
+              }}
+            >
+              {product.product_name}
+            </h2>
+            <div className="flex gap-3">
+              <p>
+                <strong style={{ color: "#9388" }}>Available Age:</strong>{" "}
+                <div className="flex items-center text-[24px]">
+                  {" "}
+                  <div className="text-purple-600">
+                    {product.age_min}
+                    <span>-</span>
+                    {product.age_max}
+                  </div>
+                </div>
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <p>
+                <strong style={{ color: "#9388" }}>Size:</strong>
+                <div className="text-purple-600">{product.size}</div>
+              </p>
+              <p>
+                <strong style={{ color: "#9388" }}>Gender:</strong>{" "}
+                <div className="text-purple-600">{product.for_gender}</div>
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <p>
+                <strong style={{ color: "#9388" }}>Color:</strong>{" "}
+                <div className="text-purple-600">{product.color}</div>
+              </p>
+              <p>
+                <strong style={{ color: "#9388" }}>Made In:</strong>{" "}
+                <div className="text-purple-600">{product.made_in}</div>
+              </p>
+            </div>
+
             <p>
-              <strong style={{ color: "#777" }}>Age Min:</strong>{" "}
-              {product.age_min}
+              <strong style={{ color: "#9388" }}>Description:</strong>{" "}
+              <div className="text-purple-600 max-w-[400px]">
+                {product.description}
+              </div>
             </p>
             <p>
-              <strong style={{ color: "#777" }}>Age Max:</strong>{" "}
-              {product.age_max}
+              <strong style={{ color: "#9388" }}>Count:</strong>
+              <br />
+              <div className="text-green-400 text-[24px]">{product.count}</div>
+            </p>
+            <p>
+              <strong style={{ color: "#9388" }}>Price:</strong>
+              <br />
+              <div className="text-[24px] flex gap-5 items-center">
+                {Math.floor(product.cost / product.discount) + "$"}{" "}
+                <p className="text-[16px] line-through text-[#6b6b6b]">
+                  {product.cost}$
+                </p>
+              </div>
             </p>
           </div>
-          <div className="flex gap-3">
-            <p>
-              <strong style={{ color: "#777" }}>Size:</strong> {product.size}
-            </p>
-            <p>
-              <strong style={{ color: "#777" }}>Gender:</strong>{" "}
-              {product.for_gender}
-            </p>
-          </div>
-          <p>
-            <strong style={{ color: "#777" }}>Price:</strong> {product.cost}
-          </p>
-          <p>
-            <strong style={{ color: "#777" }}>Discount:</strong>{" "}
-            {product.discount}
-          </p>
-          <div className="flex gap-3">
-            <p>
-              <strong style={{ color: "#777" }}>Color:</strong> {product.color}
-            </p>
-            <p>
-              <strong style={{ color: "#777" }}>Made In:</strong>{" "}
-              {product.made_in}
-            </p>
-          </div>
-          <p>
-            <strong style={{ color: "#777" }}>Count:</strong> {product.count}
-          </p>
-          <p>
-            <strong style={{ color: "#777" }}>Description:</strong>{" "}
-            {product.description}
-          </p>
         </div>
       )}
     </div>

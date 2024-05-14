@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import BasicModal from "@modals";
 import { Button, TextField, Snackbar } from "@mui/material";
-import { Alert, AlertColor } from "@mui/material"; // Import AlertColor
+import { Alert, AlertColor } from "@mui/material";
+import Loader from "@ui-load";
+
+// Assuming these imports are present
 import { category } from "../../service/category/categories";
 import { deleteCategory } from "../../components/category-actions/delete";
 import { editCategory } from "../../components/category-actions/edit";
-import Loader from "@ui-load";
+import { Field } from "formik";
 
 interface Category {
   category_id: string;
@@ -19,8 +22,11 @@ export default function Index() {
   const [notification, setNotification] = useState({
     open: false,
     message: "",
-    severity: "success" as AlertColor, // Set default severity as 'success'
+    severity: "success" as AlertColor,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const perPage = 10;
 
   const handleCloseNotification = () => {
     setNotification({ ...notification, open: false });
@@ -36,7 +42,8 @@ export default function Index() {
         message: "Category added successfully",
         severity: "success",
       });
-      getCategories();
+      setCurrentPage(1);
+      setCategoryName("");
     } catch (error) {
       console.log(error);
       setNotification({
@@ -48,23 +55,24 @@ export default function Index() {
   };
 
   const getCategories = async () => {
+    setLoader(true);
     try {
       const res = await category.categoryGet({
-        page: 1,
-        limit: 10,
+        page: currentPage,
+        limit: perPage,
       });
       setData(res.data.categories);
-      setLoader(false);
+      setTotalPages(Math.ceil(res.data.total_count / perPage));
     } catch (error) {
       console.log(error);
+    } finally {
       setLoader(false);
     }
   };
 
   useEffect(() => {
     getCategories();
-  }, []);
-
+  }, [currentPage]);
   const handleEdit = async (categoryId: string) => {
     try {
       await editCategory(categoryId, categoryName);
@@ -90,7 +98,7 @@ export default function Index() {
         modalContent={
           <div className="flex flex-col justify-center items-center gap-5">
             <h1 className="font-bold text-[32px]">Add New Category</h1>
-            <div className="flex">
+            <div className="flex flex-col gap-3">
               <TextField
                 size="small"
                 name="category"
@@ -123,7 +131,7 @@ export default function Index() {
 
       {loader ? (
         <Loader />
-      ) : data ? (
+      ) : data && data.length > 0 ? (
         <div>
           <h1 className="p-2 text-[34px]">Categories:</h1>
           <table className="min-w-full divide-y divide-gray-200">
@@ -148,13 +156,13 @@ export default function Index() {
                       modalContent={
                         <div className="flex flex-col justify-center items-center gap-5">
                           <h1 className="font-bold text-[32px]">Update Name</h1>
-                          <div className="flex">
+                          <div className="flex flex-col gap-3">
                             <TextField
                               size="small"
                               name="category"
                               placeholder="Enter new category"
-                              value={categoryName}
                               onChange={(e) => setCategoryName(e.target.value)}
+                              defaultValue={category.category_name}
                             />
                             <Button
                               variant="contained"
@@ -179,6 +187,24 @@ export default function Index() {
               ))}
             </tbody>
           </table>
+          {data.length >= perPage && (
+            <div className="flex justify-center mt-4">
+              <Button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                Prev
+              </Button>
+              <Button
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <h1 className="text-[24px] text-center text-red-400">

@@ -18,10 +18,11 @@ import {
   Alert,
 } from "@mui/material";
 import { users } from "@users";
-import { getDataFromCookie } from "@token-service";
+import { saveDataFromCookie } from "@token-service";
 import { deleteUser } from "../../components/users-actions";
+import { UserUpdate } from "../../modals/users-update";
 
-interface User {
+export interface User {
   first_name: string;
   gender: string;
   last_name: string;
@@ -38,17 +39,22 @@ const Index = () => {
     message: "",
     severity: "success" as const,
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  console.log(totalPages);
+  const perPage = 10;
 
   useEffect(() => {
     getAllUsers();
-  }, []);
+  }, [currentPage]);
 
   const initialValues: User = {
     first_name: "",
     gender: "",
     last_name: "",
     password: "",
-    email: getDataFromCookie("email"),
+    email: "",
     id: "",
   };
 
@@ -72,15 +78,19 @@ const Index = () => {
       getAllUsers();
     } catch (error) {
       console.error("Error adding user:", error);
-      throw error; 
+      throw error;
     }
   };
 
   const getAllUsers = async () => {
     setLoading(true);
     try {
-      const response = await users.usersGet({ page: 1, limit: 10 });
+      const response = await users.usersGet({
+        page: currentPage,
+        limit: perPage,
+      });
       setUserList(response.data.user);
+      setTotalPages(Math.ceil(response.data.total_count / perPage));
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -100,10 +110,6 @@ const Index = () => {
     } catch (error) {
       console.error("Error deleting user:", error);
     }
-  };
-
-  const handleUpdate = async () => {
-    alert("Edited please not check code)");
   };
 
   const handleCloseNotification = () => {
@@ -134,24 +140,31 @@ const Index = () => {
                   <ErrorMessage
                     name="first_name"
                     component="div"
-                    className="text-red-500"
+                    className="text-[#ff3636]"
                   />
                   <Field
-                    as={Select}
-                    name="gender"
-                    placeholder="Gender"
+                    name="email"
+                    placeholder="Email"
                     className="p-2 border rounded"
-                    size="small"
+                  />
+                  <ErrorMessage
+                    name="email"
+                    component="div"
+                    className="text-[#ff3636]"
+                  />
+                  <Field
+                    as="select"
+                    name="gender"
+                    className="w-full mb-3 border py-3 rounded-md"
                   >
-                    <MenuItem value="">Select Gender</MenuItem>
-                    <MenuItem value="male">Male</MenuItem>
-                    <MenuItem value="female">Female</MenuItem>
-                    <MenuItem value="other">Other</MenuItem>
+                    <option className="ml-3">Select Gender</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
                   </Field>
                   <ErrorMessage
                     name="gender"
                     component="div"
-                    className="text-red-500"
+                    className="text-[#ff3636]"
                   />
                   <Field
                     name="last_name"
@@ -161,7 +174,7 @@ const Index = () => {
                   <ErrorMessage
                     name="last_name"
                     component="div"
-                    className="text-red-500"
+                    className="text-[#ff3636]"
                   />
                   <Field
                     type="password"
@@ -172,7 +185,7 @@ const Index = () => {
                   <ErrorMessage
                     name="password"
                     component="div"
-                    className="text-red-500"
+                    className="text-[#ff3636]"
                   />
                   <Button type="submit" variant="contained">
                     Add
@@ -221,10 +234,27 @@ const Index = () => {
                   <TableCell>{user.gender}</TableCell>
                   <TableCell>{user.last_name}</TableCell>
                   <TableCell>
-                    <Button onClick={() => handleDelete(user.id)}>
-                      Delete
-                    </Button>
-                    <Button onClick={() => handleUpdate()}>Update</Button>
+                    <div className="flex">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        Delete
+                      </Button>
+                      <div
+                        onClick={() => {
+                          saveDataFromCookie("userId", user.id);
+                        }}
+                      >
+                        <UserUpdate
+                          first_name={user.first_name}
+                          gender={user.gender}
+                          last_name={user.last_name}
+                          password={user.password}
+                        />
+                      </div>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
@@ -238,6 +268,33 @@ const Index = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {userList.length >= perPage && (
+        <div className="pagination">
+          <Button
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(currentPage - 1)}
+          >
+            Prev
+          </Button>
+          {totalPages > 1 &&
+            totalPages <= 10 &&
+            Array.from({ length: totalPages }, (_, index) => (
+              <Button
+                key={index}
+                onClick={() => setCurrentPage(index + 1)}
+                variant={currentPage === index + 1 ? "contained" : "outlined"}
+              >
+                {index + 1}
+              </Button>
+            ))}
+          <Button
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage(currentPage + 1)}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </>
   );
 };

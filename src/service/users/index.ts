@@ -15,8 +15,8 @@ interface GetData {
 
 interface UpdateData extends PostData {
   id: string,
-  age:string,
-  phone_number:string
+  age:number,
+  phone_number:any
 }
 
 interface Users {
