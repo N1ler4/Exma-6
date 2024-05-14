@@ -2,7 +2,7 @@ import axios from "axios";
 import { getDataFromCookie } from "@token-service";
 
 const http = axios.create({
-    baseURL: "http://store.go-clothes.uz:5555/v1"
+    baseURL: import.meta.env.VITE_BASE_URL
 });
 
 http.interceptors.request.use((config) => {
