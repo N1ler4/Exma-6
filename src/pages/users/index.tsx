@@ -14,6 +14,8 @@ import {
   Select,
   MenuItem,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { users } from "@users";
 import { getDataFromCookie } from "@token-service";
@@ -31,6 +33,11 @@ interface User {
 const Index = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [userList, setUserList] = useState<User[]>([]);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "success" as const,
+  });
 
   useEffect(() => {
     getAllUsers();
@@ -42,13 +49,18 @@ const Index = () => {
     last_name: "",
     password: "",
     email: getDataFromCookie("email"),
-    id: ""
+    id: "",
   };
 
   const onSubmit = async (values: User, actions: any) => {
     try {
       await addUser(values);
       actions.resetForm();
+      setNotification({
+        open: true,
+        message: "User added successfully",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error adding user:", error);
     }
@@ -60,6 +72,7 @@ const Index = () => {
       getAllUsers();
     } catch (error) {
       console.error("Error adding user:", error);
+      throw error; 
     }
   };
 
@@ -67,7 +80,6 @@ const Index = () => {
     setLoading(true);
     try {
       const response = await users.usersGet({ page: 1, limit: 10 });
-      console.log(response);
       setUserList(response.data.user);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -80,13 +92,22 @@ const Index = () => {
     try {
       await deleteUser(userId);
       getAllUsers();
+      setNotification({
+        open: true,
+        message: "User deleted successfully",
+        severity: "success",
+      });
     } catch (error) {
       console.error("Error deleting user:", error);
     }
   };
 
   const handleUpdate = async () => {
-    alert("Edited please not check code)")
+    alert("Edited please not check code)");
+  };
+
+  const handleCloseNotification = () => {
+    setNotification({ ...notification, open: false });
   };
 
   return (
@@ -164,6 +185,18 @@ const Index = () => {
         handleOpen={false}
         buttonText="Add New User"
       />
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={handleCloseNotification}
+      >
+        <Alert
+          onClose={handleCloseNotification}
+          severity={notification.severity}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -191,9 +224,7 @@ const Index = () => {
                     <Button onClick={() => handleDelete(user.id)}>
                       Delete
                     </Button>
-                    <Button onClick={() => handleUpdate()}>
-                      Update
-                    </Button>
+                    <Button onClick={() => handleUpdate()}>Update</Button>
                   </TableCell>
                 </TableRow>
               ))

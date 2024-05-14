@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import BasicModal from "@modals";
-import { Button, TextField } from "@mui/material";
+import { Button, TextField, Snackbar } from "@mui/material";
+import { Alert, AlertColor } from "@mui/material"; // Import AlertColor
 import { category } from "../../service/category/categories";
 import { deleteCategory } from "../../components/category-actions/delete";
 import { editCategory } from "../../components/category-actions/edit";
@@ -15,15 +16,34 @@ export default function Index() {
   const [categoryName, setCategoryName] = useState("");
   const [data, setData] = useState<Category[]>([]);
   const [loader, setLoader] = useState(true);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "success" as AlertColor, // Set default severity as 'success'
+  });
+
+  const handleCloseNotification = () => {
+    setNotification({ ...notification, open: false });
+  };
 
   const handleSubmit = async () => {
     try {
       const data = { category_name: categoryName };
       const res = await category.categoryPost(data);
       console.log(res);
+      setNotification({
+        open: true,
+        message: "Category added successfully",
+        severity: "success",
+      });
       getCategories();
     } catch (error) {
       console.log(error);
+      setNotification({
+        open: true,
+        message: "Failed to add category",
+        severity: "error",
+      });
     }
   };
 
@@ -48,9 +68,19 @@ export default function Index() {
   const handleEdit = async (categoryId: string) => {
     try {
       await editCategory(categoryId, categoryName);
+      setNotification({
+        open: true,
+        message: "Category edited successfully",
+        severity: "success",
+      });
       getCategories();
     } catch (error) {
       console.log(error);
+      setNotification({
+        open: true,
+        message: "Failed to edit category",
+        severity: "error",
+      });
     }
   };
 
@@ -77,6 +107,19 @@ export default function Index() {
         handleOpen={false}
         buttonText="Add New Category"
       />
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={handleCloseNotification}
+      >
+        <Alert
+          onClose={handleCloseNotification}
+          severity={notification.severity}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
 
       {loader ? (
         <Loader />

@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from "formik";
-import { TextField, Button } from "@mui/material";
+import { TextField, Button, Snackbar } from "@mui/material";
+import { Alert } from '@mui/material';
 import useAuthStore from "../../store/auth";
 import { loginSchema } from "@validation";
 import { loginInterface } from "@interface";
@@ -10,9 +12,14 @@ import { saveDataFromCookie } from "@token-service";
 function Index() {
   const navigate = useNavigate();
   const { signin } = useAuthStore();
+  const [notification, setNotification] = useState({ open: false, message: '', severity: 'success' });
   const initialValues: loginInterface = {
     email: "",
     password: "",
+  };
+
+  const handleCloseNotification = () => {
+    setNotification({ ...notification, open: false });
   };
 
   const handleSubmit = async (values: loginInterface) => {
@@ -21,11 +28,13 @@ function Index() {
       const res = await signin(values);
       console.log("Response:", res);
       if (res && res.status === 200) {
-        saveDataFromCookie("email" , values.email)
+        saveDataFromCookie("email" , values.email);
+        setNotification({ open: true, message: 'Login Successful', severity: 'success' });
         navigate("/main");
       }
     } catch (err) {
       console.log("Error:", err);
+      setNotification({ open: true, message: 'Login Failed', severity: 'error' });
     }
   };
 
@@ -71,6 +80,12 @@ function Index() {
           </Form>
         )}
       </Formik>
+
+      <Snackbar open={notification.open} autoHideDuration={6000} onClose={handleCloseNotification}>
+        <Alert onClose={handleCloseNotification} severity={notification.severity as "success" | "error"}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 }

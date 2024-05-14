@@ -11,11 +11,18 @@ import {
   TableBody,
   TableHead,
   TableRow,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { saveDataFromCookie } from "@token-service";
 
 export default function Index() {
   const [productData, setProductData] = useState<Array<any>>([]);
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    severity: "success" as const, // set default severity as 'success'
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,6 +42,9 @@ export default function Index() {
     fetchData();
   }, []);
 
+  const handleNotificationClose = () => {
+    setNotification({ ...notification, open: false });
+  };
 
   const columns = [
     "Product Name",
@@ -51,6 +61,19 @@ export default function Index() {
   return (
     <div>
       <Product />
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={handleNotificationClose}
+      >
+        <Alert
+          onClose={handleNotificationClose}
+          severity={notification.severity}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
 
       <div className="mt-4">
         <TableContainer component={Paper}>
@@ -79,11 +102,8 @@ export default function Index() {
                       to={`${product.product_id}`}
                       variant="contained"
                       size="small"
-                      onClick={()=>{
-                        saveDataFromCookie(
-                          "id",
-                          `${product.product_id}`
-                        )
+                      onClick={() => {
+                        saveDataFromCookie("id", `${product.product_id}`);
                       }}
                     >
                       View
