@@ -20,3 +20,6 @@ export interface Category{
     categoryUpdate:(data:CategoryUpdate)=>any
     categoryGet:(data:CategoryGet)=>any
 }
+export interface ProtectedRouterProps{
+    element:JSX.Element;
+  }

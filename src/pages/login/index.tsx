@@ -28,7 +28,9 @@ function Index() {
       const res = await signin(values);
       console.log("Response:", res);
       if (res && res.status === 200) {
-        saveDataFromCookie("email" , values.email);
+        const { email, refresh_token } = res.data;
+        saveDataFromCookie("email", email);
+        saveDataFromCookie("refresh_token", refresh_token);
         setNotification({ open: true, message: 'Login Successful', severity: 'success' });
         navigate("/main");
       }

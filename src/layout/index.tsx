@@ -23,7 +23,7 @@ interface Props {
 }
 
 export default function ResponsiveDrawer(props: Props) {
-    const { pathname } = useLocation();
+  const { pathname } = useLocation();
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [isClosing, setIsClosing] = React.useState(false);

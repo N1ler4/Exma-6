@@ -3,8 +3,6 @@ import BasicModal from "@modals";
 import { Button, TextField, Snackbar } from "@mui/material";
 import { Alert, AlertColor } from "@mui/material";
 import Loader from "@ui-load";
-
-// Assuming these imports are present
 import { category } from "../../service/category/categories";
 import { deleteCategory } from "../../components/category-actions/delete";
 import { editCategory } from "../../components/category-actions/edit";
