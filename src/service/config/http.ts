@@ -12,34 +12,48 @@ http.interceptors.request.use((config) => {
   }
   return config;
 });
-async function refreshAccessToken() {
+async function refreshAccsesToken() {
   try {
-    const refresh_token = getDataFromCookie("refresh_token");
-    if (!refresh_token) {
-      throw new Error("Refresh token not found");
+    const stored_refresh_token = getDataFromCookie("refresh_token");
+
+    if (!stored_refresh_token) {
+      throw new Error("Refresh token not found in cookie ");
+    } else {
+      const response: any = await axios.get(
+        `http://store.go-clothes.uz:5555/v1/token/${stored_refresh_token}`
+      );
+      const { access_token, refresh_token } = response.data;
+      console.log(access_token);
+      saveDataFromCookie("token", access_token);
+      saveDataFromCookie("refresh_token", refresh_token);
+      return access_token;
     }
-    const response = await axios.get(
-      `http://store.go-clothes.uz:5555/v1/token/${refresh_token}`
-    );
-    const { access_token } = response.data;
-    saveDataFromCookie("token", access_token);
-    return access_token;
-  } catch (err) {
-    console.log(err);
+  } catch (error) { 
+    console.log(error);
   }
 }
+
+http.interceptors.request.use((config:any) => {
+  const access_token = getDataFromCookie("token");
+  if (access_token) {
+    config.headers["Authorization"] = access_token;
+  }
+  return config;
+});
+
 http.interceptors.response.use(
-  (response) => {
+  (response: any) => {
     return response;
   },
-  async (error) => {
+  async (error: any) => {
     if (error.response && error.response.status === 401) {
-      const access_token = await refreshAccessToken();
+      const access_token = await refreshAccsesToken();
+
       if (access_token) {
         const originalRequest = error.config;
         originalRequest.headers["Authorization"] = access_token;
       } else {
-        console.error("Failed to refresh access token");
+        console.error("Access token not found in config file " + error.config);
         return Promise.reject(error);
       }
     }

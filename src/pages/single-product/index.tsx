@@ -3,22 +3,31 @@ import { products } from "@products";
 import { deleteDataFromCookie, getDataFromCookie } from "@token-service";
 import { Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import http from "@http";
 import UpdateProduct from "../../modals/single-product";
+import ImageGallery from "react-image-gallery";
+import "react-image-gallery/styles/css/image-gallery.css";
 
 const ProductDetail = () => {
   const navigate = useNavigate();
   const productId = getDataFromCookie("id");
   const [product, setProduct] = useState<any>(null);
-  const [img, setImg] = useState("");
+  const [images, setImages] = useState([]);
+  console.log(images);
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         if (productId) {
           const response = await products.singleProducts(productId);
-          console.log(response);
+          console.log(response.data.image_url);
           setProduct(response.data);
+          if (response?.data?.image_url) {
+            const imgArray = response.data.image_url.map((url: string) => ({
+              original: url,
+              thumbnail: url,
+            }));
+            setImages(imgArray);
+          }
         }
       } catch (error) {
         console.error("Error fetching product:", error);
@@ -33,19 +42,6 @@ const ProductDetail = () => {
     navigate("/main/products");
   };
 
-  const getImg = async (id: string | undefined) => {
-    try {
-      const response: any = await http.get(`/media/${id}`);
-      setImg(
-        response?.data?.images[response?.data?.images.length - 1]?.image_url
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  getImg(getDataFromCookie("id"));
-
   const deleteProduct = async () => {
     try {
       await products.productsDelete(productId);
@@ -55,7 +51,6 @@ const ProductDetail = () => {
       console.error("Error deleting product:", error);
     }
   };
-
 
   return (
     <div>
@@ -68,8 +63,8 @@ const ProductDetail = () => {
         </Button>
         {product && (
           <UpdateProduct
-            ageMax={product.age_max} 
-            ageMin={product.age_min} 
+            ageMax={product.age_max}
+            ageMin={product.age_min}
             for_gender={product.for_gender}
             size={product.size}
             cost={product.cost}
@@ -84,8 +79,8 @@ const ProductDetail = () => {
       </div>
       {product && (
         <div className="mt-[60px] flex items-center justify-around">
-          <div>
-            <img src={img} alt="" className="w-[300px]" />
+          <div className="w-[600px]">
+            <ImageGallery items={images} />
           </div>
           <div>
             <h2
