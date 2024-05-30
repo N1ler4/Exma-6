@@ -26,7 +26,6 @@ function Index() {
     try {
       await loginSchema.validate(values, { abortEarly: false });
       const res = await signin(values);
-      console.log("Response:", res);
       if (res && res.status === 200) {
         const { email, refresh_token } = res.data;
         saveDataFromCookie("email", email);
@@ -35,7 +34,6 @@ function Index() {
         navigate("/main");
       }
     } catch (err) {
-      console.log("Error:", err);
       setNotification({ open: true, message: 'Login Failed', severity: 'error' });
     }
   };

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Product from "@product-modal";
 import { products } from "@products";
 import SearchIcon from "@mui/icons-material/Search";
@@ -21,10 +21,13 @@ import { getDataFromCookie, saveDataFromCookie } from "@token-service";
 import axios from "axios";
 
 export default function Index() {
+  const navigate = useNavigate();
   const [productData, setProductData] = useState<Array<any>>([]);
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [change, setChange] = useState("");
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const [page, setPage] = useState(Number(searchParams.get("page")) || 1);
   const [notification, setNotification] = useState({
     open: false,
     message: "",
@@ -32,10 +35,12 @@ export default function Index() {
   });
 
   useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage, change]);
+    fetchData();
+  }, [change, page]);
 
-  const fetchData = async (page: any) => {
+  const fetchData = async () => {
+    searchParams.set("page", String(page));
+    navigate(`?${searchParams}`);
     try {
       const response = await products.productsGet({
         page: page,
@@ -65,9 +70,6 @@ export default function Index() {
     "Actions",
   ];
 
-  const handlePageChange = (pageNumber: any) => {
-    setCurrentPage(pageNumber);
-  };
 
   const postMedia = async (data: any) => {
     try {
@@ -207,28 +209,30 @@ export default function Index() {
           </Table>
         </TableContainer>
         {totalPages > 1 && (
-          <div className="pagination">
-            <Button
-              disabled={currentPage === 1}
-              onClick={() => handlePageChange(currentPage - 1)}
+          <div className="flex justify-center items-center gap-3">
+            <button
+              className="py-2 px-3 bg-red-700 text-white rounded-lg"
+              onClick={() => {
+                if (productData.length < 1) {
+                  setPage(page - 1);
+                } else {
+                  setPage(1);
+                }
+              }}
             >
-              Prev
-            </Button>
-            {Array.from({ length: totalPages }, (_, index) => (
-              <Button
-                key={index}
-                onClick={() => handlePageChange(index + 1)}
-                variant={currentPage === index + 1 ? "contained" : "outlined"}
-              >
-                {index + 1}
-              </Button>
-            ))}
-            <Button
-              disabled={currentPage === totalPages}
-              onClick={() => handlePageChange(currentPage + 1)}
+              -
+            </button>
+            <p>{page}</p>
+            <button
+              className="py-2 px-3 bg-green-700 text-white rounded-lg"
+              onClick={() => {
+                if (productData.length > 10) {
+                  setPage(page + 1);
+                }
+              }}
             >
-              Next
-            </Button>
+              +
+            </button>
           </div>
         )}
       </div>
