@@ -19,6 +19,8 @@ import {
 } from "@mui/material";
 import { getDataFromCookie, saveDataFromCookie } from "@token-service";
 import axios from "axios";
+import Stack from "@mui/material/Stack";
+import Pagination from "@mui/material/Pagination";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -40,16 +42,16 @@ export default function Index() {
 
   const fetchData = async () => {
     searchParams.set("page", String(page));
-    navigate(`?${searchParams}`);
+    navigate(`?${searchParams.toString()}`);
     try {
       const response = await products.productsGet({
         page: page,
-        limit: 10,
+        limit: 10, 
         name: change,
       });
       console.log(response);
       setProductData(response.data.products);
-      setTotalPages(Math.ceil(response.data.total_count / 10));
+      setTotalPages(Math.ceil(response.data.total_count / 10)); 
     } catch (error) {
       console.error("Error fetching products:", error);
     }
@@ -69,7 +71,6 @@ export default function Index() {
     "Gender",
     "Actions",
   ];
-
 
   const postMedia = async (data: any) => {
     try {
@@ -111,6 +112,10 @@ export default function Index() {
     postMedia(data);
   };
 
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
+
   return (
     <div>
       <div className="flex justify-between">
@@ -128,7 +133,7 @@ export default function Index() {
             <InputBase
               sx={{ ml: 1, flex: 1 }}
               placeholder="Search"
-              inputProps={{ "aria-label": "serch google maps" }}
+              inputProps={{ "aria-label": "search products" }}
               onChange={(e) => setChange(e.target.value)}
             />
             <IconButton type="button" sx={{ p: "10px" }} aria-label="search">
@@ -143,9 +148,6 @@ export default function Index() {
         autoHideDuration={6000}
         onClose={handleNotificationClose}
       >
-        <Alert onClose={handleNotificationClose} severity={"success"}>
-          {notification.message}
-        </Alert>
       </Snackbar>
 
       <div className="mt-4">
@@ -159,7 +161,7 @@ export default function Index() {
               </TableRow>
             </TableHead>
             <TableBody>
-              {productData ? (
+              {productData.length > 0 ? (
                 productData.map((product, rowIndex) => (
                   <TableRow key={rowIndex}>
                     <TableCell>{product.product_name}</TableCell>
@@ -208,33 +210,17 @@ export default function Index() {
             </TableBody>
           </Table>
         </TableContainer>
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-3">
-            <button
-              className="py-2 px-3 bg-red-700 text-white rounded-lg"
-              onClick={() => {
-                if (productData.length < 1) {
-                  setPage(page - 1);
-                } else {
-                  setPage(1);
-                }
-              }}
-            >
-              -
-            </button>
-            <p>{page}</p>
-            <button
-              className="py-2 px-3 bg-green-700 text-white rounded-lg"
-              onClick={() => {
-                if (productData.length > 10) {
-                  setPage(page + 1);
-                }
-              }}
-            >
-              +
-            </button>
-          </div>
-        )}
+
+        <div className="flex justify-center mt-4">
+          <Stack spacing={2}>
+            <Pagination
+              count={totalPages}
+              page={page}
+              onChange={handlePageChange}
+              color="primary"
+            />
+          </Stack>
+        </div>
       </div>
     </div>
   );
